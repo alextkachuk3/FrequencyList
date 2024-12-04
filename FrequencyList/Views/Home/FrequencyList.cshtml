@@ -1,6 +1,5 @@
-﻿@model List<WordFrequency>
+﻿@model List<KeyValuePair<string, int>>
 
-<h2>Частотний словник</h2>
 <table>
     <thead>
         <tr>
@@ -9,13 +8,14 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Model)
+        @foreach (var entry in Model)
         {
             <tr>
-                <td>@item.Word</td>
-                <td>@item.Frequency</td>
+                <td>@entry.Key</td>
+                <td>@entry.Value</td>
             </tr>
         }
     </tbody>
 </table>
+
 <a href="/Home/Index">Назад</a>

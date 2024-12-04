@@ -1,4 +1,3 @@
-using FrequencyList.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -29,10 +28,8 @@ namespace FrequencyList.Controllers
                 string filePath = Path.Combine(uploadPath, file.FileName);
                 string dictionaryFilePath = Path.Combine(dictionaryPath, dictionaryFileName + ".txt");
 
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
+                using (var stream = new FileStream(filePath, FileMode.Create))     
                     file.CopyTo(stream);
-                }
 
                 RunPythonScript(filePath, dictionaryFilePath);
             }
@@ -59,16 +56,12 @@ namespace FrequencyList.Controllers
                         .Where(parts => parts.Length == 2)
                         .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])));
 
-                    foreach (var entry in wordFrequencies)
+                    foreach (var (Word, Frequency) in wordFrequencies)
                     {
-                        if (mergedDictionary.ContainsKey(entry.Word))
-                        {
-                            mergedDictionary[entry.Word] += entry.Frequency;
-                        }
+                        if (mergedDictionary.ContainsKey(Word))
+                            mergedDictionary[Word] += Frequency;
                         else
-                        {
-                            mergedDictionary[entry.Word] = entry.Frequency;
-                        }
+                            mergedDictionary[Word] = Frequency;
                     }
                 }
             }
@@ -77,7 +70,7 @@ namespace FrequencyList.Controllers
                 .OrderByDescending(entry => entry.Value)
                 .ToList();
 
-            return View("MergedDictionaryResult", sortedMergedDictionary);
+            return View("FrequencyList", sortedMergedDictionary);
         }
 
         private void RunPythonScript(string inputFilePath, string outputFilePath)
@@ -96,21 +89,8 @@ namespace FrequencyList.Controllers
                 CreateNoWindow = true
             };
 
-            using (var process = Process.Start(processStartInfo))
-            {
-                string output = process.StandardOutput.ReadToEnd();
-                string error = process.StandardError.ReadToEnd();
-                process.WaitForExit();
-
-                if (!string.IsNullOrEmpty(error))
-                {
-                    Console.WriteLine($"Python Error: {error}");
-                }
-                else
-                {
-                    Console.WriteLine($"Python Output: {output}");
-                }
-            }
+            using var process = Process.Start(processStartInfo);
+            process?.WaitForExit();
         }
     }
 }
