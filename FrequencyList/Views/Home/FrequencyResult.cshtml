@@ -1,0 +1,21 @@
+﻿@model List<WordFrequency>
+
+<h2>Частотний словник</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Слово</th>
+            <th>Частота</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Word</td>
+                <td>@item.Frequency</td>
+            </tr>
+        }
+    </tbody>
+</table>
+<a href="/Home/Index">Назад</a>

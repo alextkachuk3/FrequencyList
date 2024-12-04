@@ -1,0 +1,23 @@
+﻿@{
+    ViewData["Title"] = "Home Page";
+}
+
+<h2>Завантаження файлу</h2>
+<form action="/Home/UploadFile" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" />
+    <button type="submit">Завантажити</button>
+</form>
+
+<h2>Вибір файлів</h2>
+<form action="/Home/GenerateFrequency" method="post">
+    <ul>
+        @foreach (var file in Model)
+        {
+            <li>
+                <input type="checkbox" name="selectedFiles" value="@file" />
+                @file
+            </li>
+        }
+    </ul>
+    <button type="submit">Побудувати частотний словник</button>
+</form>
