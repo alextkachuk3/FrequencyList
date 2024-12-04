@@ -46,7 +46,7 @@ namespace FrequencyList.Controllers
             if (selectedFiles == null || selectedFiles.Length == 0)
                 return RedirectToAction("Index");
 
-            var dictionaries = new Dictionary<string, List<(string Word, int Frequency)>>();
+            var mergedDictionary = new Dictionary<string, int>();
 
             foreach (var file in selectedFiles)
             {
@@ -57,16 +57,28 @@ namespace FrequencyList.Controllers
                     var wordFrequencies = System.IO.File.ReadAllLines(dictionaryFilePath)
                         .Select(line => line.Split('\t'))
                         .Where(parts => parts.Length == 2)
-                        .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])))
-                        .ToList();
+                        .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])));
 
-                    dictionaries[file] = wordFrequencies;
+                    foreach (var entry in wordFrequencies)
+                    {
+                        if (mergedDictionary.ContainsKey(entry.Word))
+                        {
+                            mergedDictionary[entry.Word] += entry.Frequency;
+                        }
+                        else
+                        {
+                            mergedDictionary[entry.Word] = entry.Frequency;
+                        }
+                    }
                 }
             }
 
-            return View("DictionariesResult", dictionaries);
-        }
+            var sortedMergedDictionary = mergedDictionary
+                .OrderByDescending(entry => entry.Value)
+                .ToList();
 
+            return View("MergedDictionaryResult", sortedMergedDictionary);
+        }
 
         private void RunPythonScript(string inputFilePath, string outputFilePath)
         {
