@@ -1,21 +1,23 @@
 ﻿@model List<KeyValuePair<string, int>>
 
-<table>
-    <thead>
-        <tr>
-            <th>Слово</th>
-            <th>Частота</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var entry in Model)
-        {
+<div class="container mt-5">
+    <h2 class="mb-4">Сформований частотний словник</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
             <tr>
-                <td>@entry.Key</td>
-                <td>@entry.Value</td>
+                <th scope="col" class="w-75">Слово</th>
+                <th scope="col" class="w-25 text-center">Частота</th>
             </tr>
-        }
-    </tbody>
-</table>
-
-<a href="/Home/Index">Назад</a>
+        </thead>
+        <tbody>
+            @foreach (var entry in Model)
+            {
+                <tr>
+                    <td class="text-wrap">@entry.Key</td>
+                    <td class="text-center">@entry.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a href="/Home/Index" class="btn btn-primary mt-3">Назад</a>
+</div>
