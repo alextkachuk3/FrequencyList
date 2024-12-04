@@ -4,20 +4,33 @@
 
 <h2>Завантаження файлу</h2>
 <form action="/Home/UploadFile" method="post" enctype="multipart/form-data">
-    <input type="file" name="file" />
+    <label for="fileInput">Виберіть файл для завантаження:</label>
+    <input type="file" name="file" id="fileInput" required />
+    <br />
+    <label for="dictionaryFileName">Введіть назву словника:</label>
+    <input type="text" name="dictionaryFileName" id="dictionaryFileName" required />
+    <br />
     <button type="submit">Завантажити</button>
 </form>
 
 <h2>Вибір файлів</h2>
-<form action="/Home/GenerateFrequency" method="post">
-    <ul>
-        @foreach (var file in Model)
-        {
-            <li>
-                <input type="checkbox" name="selectedFiles" value="@file" />
-                @file
-            </li>
-        }
-    </ul>
-    <button type="submit">Побудувати частотний словник</button>
-</form>
+@if (Model.Count > 0)
+{
+    <form action="/Home/ViewDictionaries" method="post">
+        <ul>
+            @foreach (var file in Model)
+            {
+                <li>
+                    <input type="checkbox" name="selectedFiles" value="@file" />
+                    @file
+                </li>
+            }
+        </ul>
+        <button type="submit">Переглянути словники</button>
+    </form>
+
+}
+else
+{
+    <p>Немає доступних словників.</p>
+}

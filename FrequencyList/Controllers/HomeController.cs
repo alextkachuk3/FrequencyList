@@ -1,77 +1,104 @@
 using FrequencyList.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace FrequencyList.Controllers
 {
     public class HomeController : Controller
     {
         private readonly string uploadPath = Path.Combine(Directory.GetCurrentDirectory(), "Uploads");
+        private readonly string dictionaryPath = Path.Combine(Directory.GetCurrentDirectory(), "Dictionaries");
 
         public HomeController()
         {
-            if (!Directory.Exists(uploadPath))
-            {
-                Directory.CreateDirectory(uploadPath);
-            }
+            if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+            if (!Directory.Exists(dictionaryPath)) Directory.CreateDirectory(dictionaryPath);
         }
 
         public IActionResult Index()
         {
-            var files = Directory.GetFiles(uploadPath).Select(Path.GetFileName).ToList();
+            var files = Directory.GetFiles(dictionaryPath).Select(Path.GetFileName).ToList();
             return View(files);
         }
 
         [HttpPost]
-        public IActionResult UploadFile(IFormFile file)
+        public IActionResult UploadFile(IFormFile file, string dictionaryFileName)
         {
-            if (file != null && file.Length > 0)
+            if (file != null && file.Length > 0 && !string.IsNullOrWhiteSpace(dictionaryFileName))
             {
                 string filePath = Path.Combine(uploadPath, file.FileName);
+                string dictionaryFilePath = Path.Combine(dictionaryPath, dictionaryFileName + ".txt");
+
                 using (var stream = new FileStream(filePath, FileMode.Create))
                 {
                     file.CopyTo(stream);
                 }
+
+                RunPythonScript(filePath, dictionaryFilePath);
             }
+
             return RedirectToAction("Index");
         }
 
         [HttpPost]
-        public IActionResult GenerateFrequency(string[] selectedFiles)
+        public IActionResult ViewDictionaries(string[] selectedFiles)
         {
             if (selectedFiles == null || selectedFiles.Length == 0)
-            {
                 return RedirectToAction("Index");
-            }
 
-            Dictionary<string, int> wordCounts = new Dictionary<string, int>();
+            var dictionaries = new Dictionary<string, List<(string Word, int Frequency)>>();
 
             foreach (var file in selectedFiles)
             {
-                string filePath = Path.Combine(uploadPath, file);
-                if (System.IO.File.Exists(filePath))
+                string dictionaryFilePath = Path.Combine(dictionaryPath, file);
+
+                if (System.IO.File.Exists(dictionaryFilePath))
                 {
-                    string content = System.IO.File.ReadAllText(filePath);
-                    var words = Regex.Split(content, @"\W+")
-                                     .Where(w => !string.IsNullOrEmpty(w))
-                                     .Select(w => w.ToLower());
-                    foreach (var word in words)
-                    {
-                        if (wordCounts.ContainsKey(word))
-                            wordCounts[word]++;
-                        else
-                            wordCounts[word] = 1;
-                    }
+                    var wordFrequencies = System.IO.File.ReadAllLines(dictionaryFilePath)
+                        .Select(line => line.Split('\t'))
+                        .Where(parts => parts.Length == 2)
+                        .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])))
+                        .ToList();
+
+                    dictionaries[file] = wordFrequencies;
                 }
             }
 
-            var frequencies = wordCounts
-                .Select(wc => new WordFrequency { Word = wc.Key, Frequency = wc.Value })
-                .OrderByDescending(w => w.Frequency)
-                .ToList();
+            return View("DictionariesResult", dictionaries);
+        }
 
-            return View("FrequencyResult", frequencies);
+
+        private void RunPythonScript(string inputFilePath, string outputFilePath)
+        {
+            string stopwordsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "stopwords_ua.txt");
+            string scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "text_processor.py");
+            string arguments = $"\"{scriptPath}\" \"{inputFilePath}\" \"{outputFilePath}\" \"{stopwordsFilePath}\"";
+
+            var processStartInfo = new ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = arguments,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                UseShellExecute = false,
+                CreateNoWindow = true
+            };
+
+            using (var process = Process.Start(processStartInfo))
+            {
+                string output = process.StandardOutput.ReadToEnd();
+                string error = process.StandardError.ReadToEnd();
+                process.WaitForExit();
+
+                if (!string.IsNullOrEmpty(error))
+                {
+                    Console.WriteLine($"Python Error: {error}");
+                }
+                else
+                {
+                    Console.WriteLine($"Python Output: {output}");
+                }
+            }
         }
     }
-
 }
