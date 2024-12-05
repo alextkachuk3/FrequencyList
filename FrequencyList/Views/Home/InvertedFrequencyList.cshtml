@@ -1,0 +1,23 @@
+﻿@model Dictionary<int, string>
+
+<div class="container mt-5">
+    <h2 class="mb-4">Сформований обернений частотний словник</h2>
+    <table class="table table-striped table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th scope="col" class="w-25 text-center">Частота</th>
+                <th scope="col" class="w-75">Слова</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var entry in Model)
+            {
+                <tr>
+                    <td class="text-center">@entry.Key</td>
+                    <td class="text-wrap">@entry.Value</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <a href="/Home/Index" class="btn btn-primary mt-3">Назад</a>
+</div>

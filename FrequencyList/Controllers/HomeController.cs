@@ -73,6 +73,51 @@ namespace FrequencyList.Controllers
             return View("FrequencyList", sortedMergedDictionary);
         }
 
+        public IActionResult GenerateFrequencyDictionary(string[] selectedFiles, bool inverted = false, bool lemmatized = false)
+        {
+            if (selectedFiles == null || selectedFiles.Length == 0)
+                return RedirectToAction("Index");
+
+            var dictionary = new Dictionary<string, int>();
+
+            foreach (var file in selectedFiles)
+            {
+                string dictionaryFilePath = Path.Combine(dictionaryPath, file);
+
+                if (System.IO.File.Exists(dictionaryFilePath))
+                {
+                    var wordFrequencies = System.IO.File.ReadAllLines(dictionaryFilePath)
+                        .Select(line => line.Split('\t'))
+                        .Where(parts => parts.Length == 2)
+                        .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])));
+
+                    foreach (var (Word, Frequency) in wordFrequencies)
+                    {
+                        if (dictionary.ContainsKey(Word))
+                            dictionary[Word] += Frequency;
+                        else
+                            dictionary[Word] = Frequency;
+                    }
+                }
+            }
+
+            if (inverted)
+            {
+                var invertedDictionary = dictionary
+                    .GroupBy(kv => kv.Value)
+                    .ToDictionary(
+                        group => group.Key,
+                        group => string.Join(", ", group.Select(kv => kv.Key))
+                    );
+
+                return View("InvertedFrequencyList", invertedDictionary);
+            }
+
+            var sortedDictionary = dictionary.OrderByDescending(entry => entry.Value).ToList();
+            return View("FrequencyList", sortedDictionary);
+        }
+
+
         private void RunPythonScript(string inputFilePath, string outputFilePath)
         {
             string stopwordsFilePath = Path.Combine(Directory.GetCurrentDirectory(), "Resources", "stopwords_ua.txt");
