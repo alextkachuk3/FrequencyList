@@ -32,42 +32,52 @@
         </form>
 
         <h2 class="mb-4">Побудова словників</h2>
-        <form action="/Home/GenerateFrequencyDictionary" method="post" class="mb-3">
-            @foreach (var file in Model)
-            {
-                <input type="hidden" name="selectedFiles" value="@file" />
-            }
-            <input type="hidden" name="inverted" value="false" />
-            <input type="hidden" name="lemmatized" value="false" />
-            <button type="submit" class="btn btn-primary me-2">Прямий частотний словник словоформ</button>
-        </form>
-        <form action="/Home/GenerateFrequencyDictionary" method="post" class="mb-3">
-            @foreach (var file in Model)
-            {
-                <input type="hidden" name="selectedFiles" value="@file" />
-            }
-            <input type="hidden" name="inverted" value="true" />
-            <input type="hidden" name="lemmatized" value="false" />
-            <button type="submit" class="btn btn-secondary me-2">Обернений частотний словник словоформ</button>
-        </form>
-        <form action="/Home/GenerateFrequencyDictionary" method="post" class="mb-3">
-            @foreach (var file in Model)
-            {
-                <input type="hidden" name="selectedFiles" value="@file" />
-            }
-            <input type="hidden" name="inverted" value="false" />
-            <input type="hidden" name="lemmatized" value="true" />
-            <button type="submit" class="btn btn-success me-2">Прямий частотний словник лексем</button>
-        </form>
-        <form action="/Home/GenerateFrequencyDictionary" method="post">
-            @foreach (var file in Model)
-            {
-                <input type="hidden" name="selectedFiles" value="@file" />
-            }
-            <input type="hidden" name="inverted" value="true" />
-            <input type="hidden" name="lemmatized" value="true" />
-            <button type="submit" class="btn btn-warning me-2">Обернений частотний словник лексем</button>
-        </form>
+        <div class="row g-3">
+            <div class="col-md-6 col-lg-3 d-flex">
+                <form action="/Home/GenerateFrequencyDictionary" method="post" class="w-100">
+                    @foreach (var file in Model)
+                    {
+                        <input type="hidden" name="selectedFiles" value="@file" />
+                    }
+                    <input type="hidden" name="inverted" value="false" />
+                    <input type="hidden" name="lemmatized" value="false" />
+                    <button type="submit" class="btn btn-primary w-100" style="min-height: 80px;">Прямий частотний словник словоформ</button>
+                </form>
+            </div>
+            <div class="col-md-6 col-lg-3 d-flex">
+                <form action="/Home/GenerateFrequencyDictionary" method="post" class="w-100">
+                    @foreach (var file in Model)
+                    {
+                        <input type="hidden" name="selectedFiles" value="@file" />
+                    }
+                    <input type="hidden" name="inverted" value="true" />
+                    <input type="hidden" name="lemmatized" value="false" />
+                    <button type="submit" class="btn btn-secondary w-100" style="min-height: 80px;">Обернений частотний словник словоформ</button>
+                </form>
+            </div>
+            <div class="col-md-6 col-lg-3 d-flex">
+                <form action="/Home/GenerateFrequencyDictionary" method="post" class="w-100">
+                    @foreach (var file in Model)
+                    {
+                        <input type="hidden" name="selectedFiles" value="@file" />
+                    }
+                    <input type="hidden" name="inverted" value="false" />
+                    <input type="hidden" name="lemmatized" value="true" />
+                    <button type="submit" class="btn btn-success w-100" style="min-height: 80px;">Прямий частотний словник лексем</button>
+                </form>
+            </div>
+            <div class="col-md-6 col-lg-3 d-flex">
+                <form action="/Home/GenerateFrequencyDictionary" method="post" class="w-100">
+                    @foreach (var file in Model)
+                    {
+                        <input type="hidden" name="selectedFiles" value="@file" />
+                    }
+                    <input type="hidden" name="inverted" value="true" />
+                    <input type="hidden" name="lemmatized" value="true" />
+                    <button type="submit" class="btn btn-warning w-100" style="min-height: 80px;">Обернений частотний словник лексем</button>
+                </form>
+            </div>
+        </div>
     }
     else
     {

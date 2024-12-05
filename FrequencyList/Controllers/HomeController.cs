@@ -1,4 +1,4 @@
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace FrequencyList.Controllers
@@ -25,7 +25,7 @@ namespace FrequencyList.Controllers
         {
             if (file != null && file.Length > 0 && !string.IsNullOrWhiteSpace(dictionaryFileName))
             {
-                string filePath = Path.Combine(uploadPath, file.FileName);
+                string filePath = Path.Combine(uploadPath, dictionaryFileName + ".txt");
                 string dictionaryFilePath = Path.Combine(dictionaryPath, dictionaryFileName + ".txt");
 
                 using (var stream = new FileStream(filePath, FileMode.Create))     
@@ -82,14 +82,40 @@ namespace FrequencyList.Controllers
 
             foreach (var file in selectedFiles)
             {
-                string dictionaryFilePath = Path.Combine(dictionaryPath, file);
+                string filePath;
 
-                if (System.IO.File.Exists(dictionaryFilePath))
+                if (lemmatized)
                 {
-                    var wordFrequencies = System.IO.File.ReadAllLines(dictionaryFilePath)
-                        .Select(line => line.Split('\t'))
-                        .Where(parts => parts.Length == 2)
-                        .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])));
+                    filePath = Path.Combine(dictionaryPath, file);
+                }
+                else
+                {
+                    filePath = Path.Combine(uploadPath, file);
+                }
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    IEnumerable<(string Word, int Frequency)> wordFrequencies;
+
+                    if (lemmatized)
+                    {
+                        wordFrequencies = System.IO.File.ReadAllLines(filePath)
+                            .Select(line => line.Split('\t'))
+                            .Where(parts => parts.Length == 2)
+                            .Select(parts => (Word: parts[0], Frequency: int.Parse(parts[1])));
+                    }
+                    else
+                    {
+                        var text = System.IO.File.ReadAllText(filePath);
+
+                        var cleanedText = System.Text.RegularExpressions.Regex.Replace(text, @"[^a-zA-Zа-яА-Я0-9'\s]", "");
+
+                        var words = cleanedText.Split(new[] { ' ', '\n', '\r', '\t' }, StringSplitOptions.RemoveEmptyEntries);
+
+                        wordFrequencies = words
+                            .GroupBy(word => word.ToLower())
+                            .Select(group => (Word: group.Key, Frequency: group.Count()));
+                    }
 
                     foreach (var (Word, Frequency) in wordFrequencies)
                     {
@@ -101,9 +127,11 @@ namespace FrequencyList.Controllers
                 }
             }
 
+            var sortedDictionary = dictionary.OrderByDescending(entry => entry.Value).ToList();
+
             if (inverted)
             {
-                var invertedDictionary = dictionary
+                var invertedDictionary = sortedDictionary
                     .GroupBy(kv => kv.Value)
                     .ToDictionary(
                         group => group.Key,
@@ -112,11 +140,9 @@ namespace FrequencyList.Controllers
 
                 return View("InvertedFrequencyList", invertedDictionary);
             }
-
-            var sortedDictionary = dictionary.OrderByDescending(entry => entry.Value).ToList();
+            
             return View("FrequencyList", sortedDictionary);
         }
-
 
         private void RunPythonScript(string inputFilePath, string outputFilePath)
         {
